@@ -1,0 +1,18 @@
+[build]
+  functions = "netlify/functions"
+  publish = "public"
+
+[[redirects]]
+  from = "/l/*"
+  to = "/.netlify/functions/l"
+  status = 200
+
+[[redirects]]
+  from = "/api/create-link"
+  to = "/.netlify/functions/create-link"
+  status = 200
+
+[[redirects]]
+  from = "/img/*"
+  to = "/.netlify/functions/img"
+  status = 200
