@@ -70,7 +70,7 @@ export default async (req, context) => {
     };
     await linksStore.set(code, JSON.stringify(linkData));
 
-    const siteUrl = process.env.URL || `https://${req.headers.get("host")}`;
+    const siteUrl = "https://link-hub.online";
     const shortLink = `${siteUrl}/l/${code}`;
 
     return new Response(JSON.stringify({ success: true, shortLink, code }), {
