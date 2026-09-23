@@ -1,0 +1,8 @@
+{
+  "name": "linkcard-tool",
+  "version": "1.0.0",
+  "description": "Image link generator with OG preview for social media sharing",
+  "dependencies": {
+    "@netlify/blobs": "^7.0.0"
+  }
+}
