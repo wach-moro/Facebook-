@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LinkCard — Image Link Generator</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, Roboto, Segoe UI, sans-serif;
+    background: #0d1117;
+    color: #e6e6e6;
+    padding: 20px;
+  }
+  .wrap { max-width: 480px; margin: 0 auto; }
+  h1 {
+    font-size: 22px;
+    margin-bottom: 4px;
+  }
+  .sub { color: #8b949e; font-size: 14px; margin-bottom: 24px; }
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: #8b949e;
+    margin: 18px 0 8px;
+  }
+  input[type=text], input[type=url], textarea {
+    width: 100%;
+    padding: 14px;
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 10px;
+    color: #e6e6e6;
+    font-size: 15px;
+  }
+  input[type=file] {
+    width: 100%;
+    padding: 14px;
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 10px;
+    color: #e6e6e6;
+  }
+  textarea { min-height: 80px; resize: vertical; }
+  .btn {
+    width: 100%;
+    padding: 16px;
+    margin-top: 24px;
+    background: #e83e3e;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .btn:disabled { opacity: 0.6; }
+  .preview {
+    margin-top: 20px;
+    border: 1px solid #30363d;
+    border-radius: 10px;
+    overflow: hidden;
+    display: none;
+  }
+  .preview img { width: 100%; display: block; aspect-ratio: 1200/630; object-fit: cover; }
+  .preview .pbody { padding: 10px 14px; background: #fff; color: #000; }
+  .preview .pbody .purl { color: #606770; font-size: 12px; text-transform: uppercase; }
+  .preview .pbody .ptitle { font-weight: 700; font-size: 15px; }
+  #result {
+    margin-top: 20px;
+    padding: 16px;
+    background: #0f2818;
+    border: 1px solid #2ea043;
+    border-radius: 10px;
+    display: none;
+  }
+  #result .linkrow {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  #result input {
+    flex: 1;
+    background: #161b22;
+    border: 1px solid #30363d;
+    color: #e6e6e6;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 13px;
+  }
+  #result button {
+    background: #2ea043;
+    color: white;
+    border: none;
+    padding: 0 16px;
+    border-radius: 8px;
+    font-weight: 600;
+  }
+  #error {
+    margin-top: 16px;
+    padding: 12px;
+    background: #2d0f0f;
+    border: 1px solid #e83e3e;
+    border-radius: 8px;
+    color: #ff7b7b;
+    font-size: 14px;
+    display: none;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🔗 LinkCard</h1>
+  <div class="sub">Image ko shareable card link mein badlein</div>
+
+  <label>Image</label>
+  <input type="file" id="imageInput" accept="image/*">
+
+  <label>Redirect Destination</label>
+  <input type="url" id="redirectUrl" placeholder="https://example.com/target-page">
+
+  <label>Title</label>
+  <input type="text" id="titleInput" placeholder="Card ka title">
+
+  <label>Description</label>
+  <textarea id="descInput" placeholder="Catchy description likhein..."></textarea>
+
+  <div class="preview" id="previewBox">
+    <img id="previewImg" src="">
+    <div class="pbody">
+      <div class="purl" id="previewUrl">LINKCARD</div>
+      <div class="ptitle" id="previewTitle">Title yahan dikhega</div>
+    </div>
+  </div>
+
+  <button class="btn" id="submitBtn">Generate Link</button>
+
+  <div id="error"></div>
+
+  <div id="result">
+    <strong>✅ Link Ready!</strong>
+    <div class="linkrow">
+      <input type="text" id="resultLink" readonly>
+      <button id="copyBtn">Copy</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const imageInput = document.getElementById('imageInput');
+const previewBox = document.getElementById('previewBox');
+const previewImg = document.getElementById('previewImg');
+const previewTitle = document.getElementById('previewTitle');
+const titleInput = document.getElementById('titleInput');
+const submitBtn = document.getElementById('submitBtn');
+const errorBox = document.getElementById('error');
+const resultBox = document.getElementById('result');
+const resultLink = document.getElementById('resultLink');
+
+let imageBase64 = '';
+let imageType = '';
+
+imageInput.addEventListener('change', () => {
+  const file = imageInput.files[0];
+  if (!file) return;
+  imageType = file.type;
+  const reader = new FileReader();
+  reader.onload = () => {
+    const result = reader.result;
+    imageBase64 = result.split(',')[1];
+    previewImg.src = result;
+    previewBox.style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+});
+
+titleInput.addEventListener('input', () => {
+  previewTitle.textContent = titleInput.value || 'Title yahan dikhega';
+});
+
+submitBtn.addEventListener('click', async () => {
+  errorBox.style.display = 'none';
+  resultBox.style.display = 'none';
+
+  const redirectUrl = document.getElementById('redirectUrl').value.trim();
+  const description = document.getElementById('descInput').value.trim();
+  const title = titleInput.value.trim();
+
+  if (!imageBase64) {
+    showError('Pehle ek image select karein');
+    return;
+  }
+  if (!redirectUrl) {
+    showError('Redirect URL zaroori hai');
+    return;
+  }
+
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Generating...';
+
+  try {
+    const res = await fetch('/api/create-link', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ imageBase64, imageType, redirectUrl, description, title })
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      showError(data.error || 'Kuch ghalat ho gaya');
+      return;
+    }
+
+    resultLink.value = data.shortLink;
+    resultBox.style.display = 'block';
+  } catch (err) {
+    showError('Network error: ' + err.message);
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Generate Link';
+  }
+});
+
+document.getElementById('copyBtn').addEventListener('click', () => {
+  resultLink.select();
+  navigator.clipboard.writeText(resultLink.value);
+});
+
+function showError(msg) {
+  errorBox.textContent = msg;
+  errorBox.style.display = 'block';
+}
+</script>
+</body>
+</html>
